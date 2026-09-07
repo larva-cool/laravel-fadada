@@ -35,6 +35,44 @@ abstract class BaseService
     }
 
     /**
+     * 获取 config 中配置的 Initiator（调用方主体）。
+     *
+     * 返回结构：
+     *   [
+     *     'idType'     => 'corp' | 'person',
+     *     'openId' => '...',
+     *   ]
+     *
+     * @return array{idType:string,openId:string}
+     */
+    public function getInitiator(): array
+    {
+        $default = ['idType' => 'corp', 'openId' => ''];
+        $cfg = $this->config('fadada.initiator', $default);
+
+        if (! is_array($cfg)) {
+            $cfg = $default;
+        }
+
+        return [
+            'idType'     => (string) ($cfg['idType'] ?? 'corp'),
+            'openId' => (string) ($cfg['openId'] ?? ''),
+        ];
+    }
+
+    /**
+     * 读取配置：优先使用 Laravel config()，未安装则回退到 getenv()。
+     */
+    protected function config(string $key, $default = null)
+    {
+        if (function_exists('config')) {
+            // @phpstan-ignore-next-line
+            return \config($key, $default);
+        }
+        return getenv($key) ?: $default;
+    }
+
+    /**
      * 代理转发：
      *   - 第一个参数是 req 数据（数组、stdClass 或 req 对象）；
      *   - 剩余参数透传给原方法（极少数接口会用到）。

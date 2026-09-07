@@ -91,7 +91,10 @@ class FadadaServiceProvider extends ServiceProvider
 
         // IClient 别名：让所有依赖 IClient 的原 SDK Client
         // （以及 ServiceClient 等）解析到我们的包装类 FadadaClient。
-        $this->app->alias(IClient::class, FadadaClient::class);
+        // Laravel 容器 alias() 签名为 alias($abstract, $alias)：
+        //   $aliases[$alias] = $abstract;
+        // 即第一个参数是「被指向的抽象」，第二个是「别名键」。
+        $this->app->alias(FadadaClient::class, IClient::class);
 
         // FadadaManager：Facade 根
         $this->app->singleton(FadadaManager::class, function ($app) {

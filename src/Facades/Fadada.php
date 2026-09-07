@@ -3,6 +3,7 @@
 namespace Larva\Fadada\Facades;
 
 use Illuminate\Support\Facades\Facade;
+use Larva\Fadada\FadadaManager;
 
 /**
  * @method static \Larva\Fadada\Services\UserService user()
@@ -32,7 +33,7 @@ class Fadada extends Facade
      *
      * @return string
      */
-    protected static function getFacadeAccessor()
+    protected static function getFacadeAccessor(): string
     {
         return FadadaManager::class;
     }

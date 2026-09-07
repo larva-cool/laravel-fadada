@@ -4,6 +4,7 @@ namespace Larva\Fadada;
 
 use FddCloud\client\ServiceClient;
 use Illuminate\Contracts\Cache\Repository as CacheRepository;
+use Psr\SimpleCache\InvalidArgumentException;
 
 /**
  * 法大大 AccessToken 管理器
@@ -17,17 +18,17 @@ class AccessToken
     /**
      * @var ServiceClient
      */
-    protected $serviceClient;
+    protected ServiceClient $serviceClient;
 
     /**
      * @var CacheRepository
      */
-    protected $cache;
+    protected CacheRepository $cache;
 
     /**
      * @var array
      */
-    protected $config;
+    protected array $config;
 
     public function __construct(ServiceClient $serviceClient, CacheRepository $cache, array $config)
     {
@@ -39,8 +40,9 @@ class AccessToken
     /**
      * 获取 AccessToken（自动缓存与续期）
      *
-     * @param bool $forceRefresh 是否强制刷新
+     * @param  bool  $forceRefresh  是否强制刷新
      * @return string
+     * @throws InvalidArgumentException
      */
     public function getToken(bool $forceRefresh = false): string
     {

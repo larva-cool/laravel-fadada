@@ -2,8 +2,8 @@
 
 namespace Larva\Fadada;
 
-use FddCloud\client\AppTemplateClient;
 use FddCloud\client\ApprovalClient;
+use FddCloud\client\AppTemplateClient;
 use FddCloud\client\ArchivesPerformanceClient;
 use FddCloud\client\CallbackClient;
 use FddCloud\client\Client as SdkClient;
@@ -21,8 +21,8 @@ use FddCloud\client\ToolServiceClient;
 use FddCloud\client\UserClient;
 use Illuminate\Contracts\Cache\Repository as CacheRepository;
 use Illuminate\Support\ServiceProvider;
-use Larva\Fadada\Services\AppTemplateService;
 use Larva\Fadada\Services\ApprovalService;
+use Larva\Fadada\Services\AppTemplateService;
 use Larva\Fadada\Services\ArchivesPerformanceService;
 use Larva\Fadada\Services\CallbackService;
 use Larva\Fadada\Services\CorpService;
@@ -38,33 +38,36 @@ use Larva\Fadada\Services\TemplateService;
 use Larva\Fadada\Services\ToolService;
 use Larva\Fadada\Services\UserService;
 
+/**
+ * 法大大 服务提供器
+ */
 class FadadaServiceProvider extends ServiceProvider
 {
     /**
      * 各业务 Service 对应的原 SDK client 类。
      */
     protected $serviceBindings = [
-        UserService::class                  => UserClient::class,
-        CorpService::class                  => CorpClient::class,
-        OrgService::class                   => OrgClient::class,
-        SealService::class                  => SealClient::class,
-        TemplateService::class              => TemplateClient::class,
-        AppTemplateService::class           => AppTemplateClient::class,
-        DocService::class                   => DocClient::class,
-        SignTaskService::class              => SignTaskClient::class,
-        EUIService::class                   => EUIClient::class,
-        ApprovalService::class              => ApprovalClient::class,
-        DraftService::class                 => DraftClient::class,
-        ArchivesPerformanceService::class   => ArchivesPerformanceClient::class,
-        OCRService::class                   => OCRClient::class,
-        ToolService::class                  => ToolServiceClient::class,
-        CallbackService::class              => CallbackClient::class,
+        UserService::class => UserClient::class,
+        CorpService::class => CorpClient::class,
+        OrgService::class => OrgClient::class,
+        SealService::class => SealClient::class,
+        TemplateService::class => TemplateClient::class,
+        AppTemplateService::class => AppTemplateClient::class,
+        DocService::class => DocClient::class,
+        SignTaskService::class => SignTaskClient::class,
+        EUIService::class => EUIClient::class,
+        ApprovalService::class => ApprovalClient::class,
+        DraftService::class => DraftClient::class,
+        ArchivesPerformanceService::class => ArchivesPerformanceClient::class,
+        OCRService::class => OCRClient::class,
+        ToolService::class => ToolServiceClient::class,
+        CallbackService::class => CallbackClient::class,
     ];
 
     public function register()
     {
         $this->mergeConfigFrom(
-            __DIR__ . '/../config/fadada.php',
+            __DIR__.'/../config/fadada.php',
             'fadada'
         );
 
@@ -98,7 +101,7 @@ class FadadaServiceProvider extends ServiceProvider
         // AccessToken 管理（带缓存）
         $this->app->singleton(AccessToken::class, function ($app) {
             $config = $app['config']->get('fadada');
-            $store  = $config['token']['cache_store'] ?? null;
+            $store = $config['token']['cache_store'] ?? null;
             /** @var CacheRepository $cache */
             $cache = $store ? $app['cache']->store($store) : $app['cache']->store();
 
@@ -130,11 +133,11 @@ class FadadaServiceProvider extends ServiceProvider
         }
     }
 
-    public function boot()
+    public function boot(): void
     {
         if ($this->app->runningInConsole()) {
             $this->publishes([
-                __DIR__ . '/../config/fadada.php' => config_path('fadada.php'),
+                __DIR__.'/../config/fadada.php' => config_path('fadada.php'),
             ], 'fadada-config');
         }
     }

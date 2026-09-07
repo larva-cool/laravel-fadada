@@ -17,7 +17,7 @@ class GetServiceService extends TokenlessService
     /**
      * @var AccessToken
      */
-    protected $accessToken;
+    protected AccessToken $accessToken;
 
     public function __construct(ServiceClient $client, AccessToken $accessToken)
     {

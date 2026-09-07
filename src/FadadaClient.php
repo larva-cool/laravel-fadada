@@ -14,9 +14,9 @@ use FddCloud\client\IClient;
 class FadadaClient implements IClient
 {
     /**
-     * @var \FddCloud\client\Client
+     * @var IClient
      */
-    protected $sdkClient;
+    protected IClient $sdkClient;
 
     public function __construct(IClient $sdkClient)
     {
@@ -50,7 +50,7 @@ class FadadaClient implements IClient
     /**
      * 暴露底层 SDK Client 以备高级场景使用。
      */
-    public function getSdkClient(): \FddCloud\client\Client
+    public function getSdkClient(): IClient
     {
         return $this->sdkClient;
     }

@@ -28,7 +28,19 @@ class FadadaClient implements IClient
      */
     public function request($accessToken, $bizContent, $path)
     {
-        return $this->sdkClient->request($accessToken, $bizContent, $path);
+        $result = $this->sdkClient->request($accessToken, $bizContent, $path);
+
+        // 原 SDK 返回的是未解码的响应体字符串，这里统一 json_decode 成数组，
+        // 方便业务层直接读取返回字段。若响应不是合法 JSON（如文件流等），
+        // 则原样返回，保持向后兼容。
+        if (is_string($result)) {
+            $decoded = json_decode($result, true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                return $decoded;
+            }
+        }
+
+        return $result;
     }
 
     /**

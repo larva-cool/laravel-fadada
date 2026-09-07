@@ -161,9 +161,14 @@ abstract class BaseService
 
     /**
      * 用 setXxx() 或 public 属性给对象赋值。
+     *
+     * 在赋值前先递归剔除 null 与空数组，避免被原 SDK 序列化为
+     * "field":null / "field":[] 触发法大大服务端校验失败。
      */
     protected function hydrate(object $object, array $data): void
     {
+        $data = self::cleanEmpty($data);
+
         foreach ($data as $key => $value) {
             // snake_case -> camelCase，例如 client_user_id -> clientUserId
             $camel = lcfirst(str_replace(' ', '', ucwords(str_replace(['-', '_'], ' ', $key))));
@@ -184,5 +189,35 @@ abstract class BaseService
                 $object->{$key} = $value;
             }
         }
+    }
+
+    /**
+     * 递归剔除 payload 中的 null 与空数组，避免被 SDK 序列化为
+     * "field":null / "field":[]。
+     *
+     * 保留 false、0、'0' 这类业务上有意义的「空值」。
+     *
+     * @param array $data
+     * @return array
+     */
+    public static function cleanEmpty(array $data): array
+    {
+        foreach ($data as $key => $value) {
+            if (is_array($value)) {
+                $value = self::cleanEmpty($value);
+                if ($value === []) {
+                    unset($data[$key]);
+                    continue;
+                }
+                $data[$key] = $value;
+                continue;
+            }
+
+            if ($value === null) {
+                unset($data[$key]);
+            }
+        }
+
+        return $data;
     }
 }

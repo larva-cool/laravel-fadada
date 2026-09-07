@@ -1,0 +1,141 @@
+<?php
+
+namespace Larva\LaravelFadada;
+
+use FddCloud\client\AppTemplateClient;
+use FddCloud\client\ApprovalClient;
+use FddCloud\client\ArchivesPerformanceClient;
+use FddCloud\client\CallbackClient;
+use FddCloud\client\Client as SdkClient;
+use FddCloud\client\CorpClient;
+use FddCloud\client\DocClient;
+use FddCloud\client\DraftClient;
+use FddCloud\client\EUIClient;
+use FddCloud\client\OCRClient;
+use FddCloud\client\OrgClient;
+use FddCloud\client\SealClient;
+use FddCloud\client\ServiceClient;
+use FddCloud\client\SignTaskClient;
+use FddCloud\client\TemplateClient;
+use FddCloud\client\ToolServiceClient;
+use FddCloud\client\UserClient;
+use Illuminate\Contracts\Cache\Repository as CacheRepository;
+use Illuminate\Support\ServiceProvider;
+use Larva\LaravelFadada\Services\AppTemplateService;
+use Larva\LaravelFadada\Services\ApprovalService;
+use Larva\LaravelFadada\Services\ArchivesPerformanceService;
+use Larva\LaravelFadada\Services\CallbackService;
+use Larva\LaravelFadada\Services\CorpService;
+use Larva\LaravelFadada\Services\DocService;
+use Larva\LaravelFadada\Services\DraftService;
+use Larva\LaravelFadada\Services\EUIService;
+use Larva\LaravelFadada\Services\GetServiceService;
+use Larva\LaravelFadada\Services\OCRService;
+use Larva\LaravelFadada\Services\OrgService;
+use Larva\LaravelFadada\Services\SealService;
+use Larva\LaravelFadada\Services\SignTaskService;
+use Larva\LaravelFadada\Services\TemplateService;
+use Larva\LaravelFadada\Services\ToolService;
+use Larva\LaravelFadada\Services\UserService;
+
+class FadadaServiceProvider extends ServiceProvider
+{
+    /**
+     * 各业务 Service 对应的原 SDK client 类。
+     */
+    protected $serviceBindings = [
+        UserService::class                  => UserClient::class,
+        CorpService::class                  => CorpClient::class,
+        OrgService::class                   => OrgClient::class,
+        SealService::class                  => SealClient::class,
+        TemplateService::class              => TemplateClient::class,
+        AppTemplateService::class           => AppTemplateClient::class,
+        DocService::class                   => DocClient::class,
+        SignTaskService::class              => SignTaskClient::class,
+        EUIService::class                   => EUIClient::class,
+        ApprovalService::class              => ApprovalClient::class,
+        DraftService::class                 => DraftClient::class,
+        ArchivesPerformanceService::class   => ArchivesPerformanceClient::class,
+        OCRService::class                   => OCRClient::class,
+        ToolService::class                  => ToolServiceClient::class,
+        CallbackService::class              => CallbackClient::class,
+    ];
+
+    public function register()
+    {
+        $this->mergeConfigFrom(
+            __DIR__ . '/../config/fadada.php',
+            'fadada'
+        );
+
+        // 原 SDK 底层 Client（带签名逻辑）
+        $this->app->singleton(SdkClient::class, function ($app) {
+            $config = $app['config']->get('fadada');
+            return new SdkClient(
+                $config['app_id'],
+                $config['app_secret'],
+                $config['service_url'],
+                $config['timeout'],
+                $config['debug']
+            );
+        });
+
+        // 我们自己的包装类（实现 IClient）
+        $this->app->singleton(FadadaClient::class, function ($app) {
+            return new FadadaClient($app->make(SdkClient::class));
+        });
+
+        // FadadaManager：Facade 根
+        $this->app->singleton(FadadaManager::class, function ($app) {
+            return new FadadaManager($app);
+        });
+
+        // ServiceClient：用于获取 access token
+        $this->app->singleton(ServiceClient::class, function ($app) {
+            return new ServiceClient($app->make(FadadaClient::class));
+        });
+
+        // AccessToken 管理（带缓存）
+        $this->app->singleton(AccessToken::class, function ($app) {
+            $config = $app['config']->get('fadada');
+            $store  = $config['token']['cache_store'] ?? null;
+            /** @var CacheRepository $cache */
+            $cache = $store ? $app['cache']->store($store) : $app['cache']->store();
+
+            return new AccessToken(
+                $app->make(ServiceClient::class),
+                $cache,
+                array_merge(
+                    ['app_id' => $config['app_id']],
+                    $config['token'] ?? []
+                )
+            );
+        });
+
+        // 16 个业务 Service
+        $this->app->singleton(GetServiceService::class, function ($app) {
+            return new GetServiceService(
+                $app->make(ServiceClient::class),
+                $app->make(AccessToken::class)
+            );
+        });
+
+        foreach ($this->serviceBindings as $serviceClass => $clientClass) {
+            $this->app->singleton($serviceClass, function ($app) use ($serviceClass, $clientClass) {
+                return new $serviceClass(
+                    $app->make($clientClass),
+                    $app->make(AccessToken::class)
+                );
+            });
+        }
+    }
+
+    public function boot()
+    {
+        if ($this->app->runningInConsole()) {
+            $this->publishes([
+                __DIR__ . '/../config/fadada.php' => config_path('fadada.php'),
+            ], 'fadada-config');
+        }
+    }
+}

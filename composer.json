@@ -1,9 +1,30 @@
 {
     "name": "larva/laravel-fadada",
+    "description": "Laravel 封装法大大 FASC OpenAPI SDK",
     "license": "MIT",
+    "keywords": [
+        "laravel",
+        "fadada",
+        "fasc",
+        "fadada-sdk",
+        "laravel-fadada",
+        "电子合同",
+        "电子签"
+    ],
+    "type": "library",
     "autoload": {
         "psr-4": {
             "Larva\\LaravelFadada\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Larva\\LaravelFadada\\FadadaServiceProvider"
+            ],
+            "aliases": {
+                "Fadada": "Larva\\LaravelFadada\\Facades\\Fadada"
+            }
         }
     },
     "authors": [
@@ -13,6 +34,12 @@
         }
     ],
     "require": {
-        "fadada/fasc-openapi-php-sdk": "^5.8"
+        "php": ">=8.2",
+        "ext-curl": "*",
+        "ext-iconv": "*",
+        "ext-json": "*",
+        "fadada/fasc-openapi-php-sdk": "^5.8",
+        "illuminate/support": "^12.0|^13.0",
+        "illuminate/contracts": "^12.0|^13.0"
     }
 }

@@ -44,8 +44,10 @@ class FadadaClient implements IClient
 
         // 法大大成功码为 100000，成功时直接返回解析后的 data，
         // 业务层无需再关心 code/msg 外壳。失败则返回完整响应供调用方判断。
+        // data 缺失或为 null 时统一返回空数组，保持返回类型一致，避免调用方
+        // （如 AccessToken::parseResponse 期望数组）遇到 null 导致类型错误。
         if ((int) ($decoded['code'] ?? 0) === 100000) {
-            return $decoded['data'] ?? null;
+            return $decoded['data'] ?? [];
         }
 
         return $decoded;

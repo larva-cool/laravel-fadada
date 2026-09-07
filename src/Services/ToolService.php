@@ -1,9 +1,9 @@
 <?php
 
-namespace Larva\LaravelFadada\Services;
+namespace Larva\Fadada\Services;
 
 use FddCloud\client\ToolServiceClient;
-use Larva\LaravelFadada\AccessToken;
+use Larva\Fadada\AccessToken;
 
 /**
  * 工具能力服务（信息比对校验、证照 OCR、个人身份核验）

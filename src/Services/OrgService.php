@@ -1,9 +1,9 @@
 <?php
 
-namespace Larva\LaravelFadada\Services;
+namespace Larva\Fadada\Services;
 
 use FddCloud\client\OrgClient;
-use Larva\LaravelFadada\AccessToken;
+use Larva\Fadada\AccessToken;
 
 /**
  * 组织管理（部门、成员、相对方）

@@ -1,9 +1,9 @@
 <?php
 
-namespace Larva\LaravelFadada\Services;
+namespace Larva\Fadada\Services;
 
 use FddCloud\client\SealClient;
-use Larva\LaravelFadada\AccessToken;
+use Larva\Fadada\AccessToken;
 
 /**
  * 印章管理（企业印章、个人签名）

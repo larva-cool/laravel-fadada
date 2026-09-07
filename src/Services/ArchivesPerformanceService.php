@@ -1,9 +1,9 @@
 <?php
 
-namespace Larva\LaravelFadada\Services;
+namespace Larva\Fadada\Services;
 
 use FddCloud\client\ArchivesPerformanceClient;
-use Larva\LaravelFadada\AccessToken;
+use Larva\Fadada\AccessToken;
 
 /**
  * 合同归档 / 合同履约

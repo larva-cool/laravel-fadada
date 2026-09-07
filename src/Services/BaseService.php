@@ -1,8 +1,8 @@
 <?php
 
-namespace Larva\LaravelFadada\Services;
+namespace Larva\Fadada\Services;
 
-use Larva\LaravelFadada\AccessToken;
+use Larva\Fadada\AccessToken;
 
 /**
  * 业务模块 Service 基类

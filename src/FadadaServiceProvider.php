@@ -1,6 +1,6 @@
 <?php
 
-namespace Larva\LaravelFadada;
+namespace Larva\Fadada;
 
 use FddCloud\client\AppTemplateClient;
 use FddCloud\client\ApprovalClient;
@@ -21,22 +21,22 @@ use FddCloud\client\ToolServiceClient;
 use FddCloud\client\UserClient;
 use Illuminate\Contracts\Cache\Repository as CacheRepository;
 use Illuminate\Support\ServiceProvider;
-use Larva\LaravelFadada\Services\AppTemplateService;
-use Larva\LaravelFadada\Services\ApprovalService;
-use Larva\LaravelFadada\Services\ArchivesPerformanceService;
-use Larva\LaravelFadada\Services\CallbackService;
-use Larva\LaravelFadada\Services\CorpService;
-use Larva\LaravelFadada\Services\DocService;
-use Larva\LaravelFadada\Services\DraftService;
-use Larva\LaravelFadada\Services\EUIService;
-use Larva\LaravelFadada\Services\GetServiceService;
-use Larva\LaravelFadada\Services\OCRService;
-use Larva\LaravelFadada\Services\OrgService;
-use Larva\LaravelFadada\Services\SealService;
-use Larva\LaravelFadada\Services\SignTaskService;
-use Larva\LaravelFadada\Services\TemplateService;
-use Larva\LaravelFadada\Services\ToolService;
-use Larva\LaravelFadada\Services\UserService;
+use Larva\Fadada\Services\AppTemplateService;
+use Larva\Fadada\Services\ApprovalService;
+use Larva\Fadada\Services\ArchivesPerformanceService;
+use Larva\Fadada\Services\CallbackService;
+use Larva\Fadada\Services\CorpService;
+use Larva\Fadada\Services\DocService;
+use Larva\Fadada\Services\DraftService;
+use Larva\Fadada\Services\EUIService;
+use Larva\Fadada\Services\GetServiceService;
+use Larva\Fadada\Services\OCRService;
+use Larva\Fadada\Services\OrgService;
+use Larva\Fadada\Services\SealService;
+use Larva\Fadada\Services\SignTaskService;
+use Larva\Fadada\Services\TemplateService;
+use Larva\Fadada\Services\ToolService;
+use Larva\Fadada\Services\UserService;
 
 class FadadaServiceProvider extends ServiceProvider
 {

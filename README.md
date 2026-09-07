@@ -67,7 +67,7 @@ return [
 ### 通过 Facade
 
 ```php
-use Larva\LaravelFadada\Facades\Fadada;
+use Larva\Fadada\Facades\Fadada;
 
 // 个人用户授权链接
 $response = Fadada::user()->getUserAuthUrl([
@@ -91,8 +91,8 @@ $token = Fadada::getService()->refreshAccessToken();
 ### 通过依赖注入
 
 ```php
-use Larva\LaravelFadada\Services\SignTaskService;
-use Larva\LaravelFadada\Services\UserService;
+use Larva\Fadada\Services\SignTaskService;
+use Larva\Fadada\Services\UserService;
 
 class ContractController
 {

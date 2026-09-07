@@ -1,6 +1,6 @@
 <?php
 
-namespace Larva\LaravelFadada;
+namespace Larva\Fadada;
 
 use FddCloud\client\IClient;
 

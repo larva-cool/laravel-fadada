@@ -29,16 +29,16 @@
   },
   "autoload": {
     "psr-4": {
-      "Larva\\LaravelFadada\\": "src/"
+      "Larva\\Fadada\\": "src/"
     }
   },
   "extra": {
     "laravel": {
       "providers": [
-        "Larva\\LaravelFadada\\FadadaServiceProvider"
+        "Larva\\Fadada\\FadadaServiceProvider"
       ],
       "aliases": {
-        "Fadada": "Larva\\LaravelFadada\\Facades\\Fadada"
+        "Fadada": "Larva\\Fadada\\Facades\\Fadada"
       }
     }
   }

@@ -11,6 +11,7 @@ use FddCloud\client\CorpClient;
 use FddCloud\client\DocClient;
 use FddCloud\client\DraftClient;
 use FddCloud\client\EUIClient;
+use FddCloud\client\IClient;
 use FddCloud\client\OCRClient;
 use FddCloud\client\OrgClient;
 use FddCloud\client\SealClient;
@@ -87,6 +88,10 @@ class FadadaServiceProvider extends ServiceProvider
         $this->app->singleton(FadadaClient::class, function ($app) {
             return new FadadaClient($app->make(SdkClient::class));
         });
+
+        // IClient 别名：让所有依赖 IClient 的原 SDK Client
+        // （以及 ServiceClient 等）解析到我们的包装类 FadadaClient。
+        $this->app->alias(IClient::class, FadadaClient::class);
 
         // FadadaManager：Facade 根
         $this->app->singleton(FadadaManager::class, function ($app) {

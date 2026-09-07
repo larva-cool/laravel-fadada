@@ -1,0 +1,18 @@
+{
+    "name": "larva/laravel-fadada",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Larva\\LaravelFadada\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "xutongle",
+            "email": "xutongle@msn.com"
+        }
+    ],
+    "require": {
+        "fadada/fasc-openapi-php-sdk": "^5.8"
+    }
+}

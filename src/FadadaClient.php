@@ -30,17 +30,25 @@ class FadadaClient implements IClient
     {
         $result = $this->sdkClient->request($accessToken, $bizContent, $path);
 
-        // 原 SDK 返回的是未解码的响应体字符串，这里统一 json_decode 成数组，
-        // 方便业务层直接读取返回字段。若响应不是合法 JSON（如文件流等），
-        // 则原样返回，保持向后兼容。
-        if (is_string($result)) {
-            $decoded = json_decode($result, true);
-            if (json_last_error() === JSON_ERROR_NONE) {
-                return $decoded;
-            }
+        // 原 SDK 返回的是未解码的响应体字符串。
+        if (! is_string($result)) {
+            return $result;
         }
 
-        return $result;
+        $decoded = json_decode($result, true);
+
+        // 非合法 JSON（如文件流等）原样返回，保持向后兼容。
+        if (! is_array($decoded)) {
+            return $result;
+        }
+
+        // 法大大成功码为 100000，成功时直接返回解析后的 data，
+        // 业务层无需再关心 code/msg 外壳。失败则返回完整响应供调用方判断。
+        if ((int) ($decoded['code'] ?? 0) === 100000) {
+            return $decoded['data'] ?? null;
+        }
+
+        return $decoded;
     }
 
     /**

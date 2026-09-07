@@ -88,14 +88,24 @@ class AccessToken
 
     /**
      * 解析 ServiceClient 返回的 JSON 响应。
-     * SDK 返回的可能是 JSON 字符串，也可能是错误字符串。
+     *
+     * FadadaClient::request 成功时已直接返回 data（数组），
+     * 失败时才返回完整响应数组；这里同时兼容两者，避免二次解码。
      */
-    protected function parseResponse(string $response): array
+    protected function parseResponse($response): array
     {
+        if (is_array($response)) {
+            return $response;
+        }
+
+        if (! is_string($response)) {
+            return [];
+        }
+
         $decoded = json_decode($response, true);
 
         if (is_array($decoded)) {
-            // 法大大返回格式示例: {"data":{"accessToken":"xxx","expiresIn":7200}, "code":1, ...}
+            // 法大大返回格式示例: {"data":{"accessToken":"xxx","expiresIn":7200}, "code":100000, ...}
             if (isset($decoded['data']) && is_array($decoded['data'])) {
                 return $decoded['data'];
             }

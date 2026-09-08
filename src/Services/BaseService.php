@@ -3,6 +3,7 @@
 namespace Larva\Fadada\Services;
 
 use Larva\Fadada\AccessToken;
+use Psr\SimpleCache\InvalidArgumentException;
 
 /**
  * 业务模块 Service 基类
@@ -26,11 +27,11 @@ abstract class BaseService
     /**
      * @var AccessToken
      */
-    protected $accessToken;
+    protected AccessToken $accessToken;
 
     public function __construct($client, AccessToken $accessToken)
     {
-        $this->client      = $client;
+        $this->client = $client;
         $this->accessToken = $accessToken;
     }
 
@@ -50,7 +51,7 @@ abstract class BaseService
         $default = ['idType' => 'corp', 'openId' => ''];
         $cfg = $this->config('fadada.initiator', $default);
 
-        if (! is_array($cfg)) {
+        if (!is_array($cfg)) {
             $cfg = $default;
         }
 
@@ -79,13 +80,14 @@ abstract class BaseService
      *
      * 自动注入 accessToken。
      *
-     * @param string $method
-     * @param array  $args
+     * @param  string  $method
+     * @param  array  $args
      * @return mixed
+     * @throws InvalidArgumentException|\ReflectionException
      */
-    public function __call($method, $args)
+    public function __call(string $method, $args)
     {
-        if (! method_exists($this->client, $method)) {
+        if (!method_exists($this->client, $method)) {
             throw new \BadMethodCallException(sprintf(
                 'Method [%s] does not exist on %s or its underlying SDK client.',
                 $method,
@@ -122,18 +124,19 @@ abstract class BaseService
      * 通过反射获取原 SDK 方法签名中的第一个 req 参数类型，
      * 把数组 / stdClass 转成对应的 req 对象并赋值。
      *
-     * @param string $method
-     * @param array  $extraArgs
-     * @param mixed  $payload
+     * @param  string  $method
+     * @param  array  $extraArgs
+     * @param  mixed  $payload
      * @return object
+     * @throws \ReflectionException
      */
-    protected function buildRequest($method, $extraArgs, $payload)
+    protected function buildRequest(string $method, $extraArgs, $payload)
     {
         $ref = new \ReflectionMethod($this->client, $method);
         $parameters = $ref->getParameters();
 
         // 默认第一个参数就是 req 对象
-        if (! isset($parameters[1])) {
+        if (!isset($parameters[1])) {
             return $payload;
         }
 
@@ -173,7 +176,7 @@ abstract class BaseService
             // snake_case -> camelCase，例如 client_user_id -> clientUserId
             $camel = lcfirst(str_replace(' ', '', ucwords(str_replace(['-', '_'], ' ', $key))));
 
-            $setter = 'set' . ucfirst($camel);
+            $setter = 'set'.ucfirst($camel);
 
             if (method_exists($object, $setter)) {
                 $object->{$setter}($value);
@@ -197,7 +200,7 @@ abstract class BaseService
      *
      * 保留 false、0、'0' 这类业务上有意义的「空值」。
      *
-     * @param array $data
+     * @param  array  $data
      * @return array
      */
     public static function cleanEmpty(array $data): array

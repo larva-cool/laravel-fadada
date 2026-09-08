@@ -17,6 +17,7 @@ class TemplateService extends BaseService
         parent::__construct($client, $accessToken);
     }
 
+
     /**
      * 查询签署模板详情。
      *
@@ -24,7 +25,7 @@ class TemplateService extends BaseService
      */
     public function getDetail(string $signTemplateId): array
     {
-        return $this->client->getSignTemplateDetail([
+        return $this->getSignTemplateDetail([
             'signTemplateId' => $signTemplateId,
             'ownerId' => $this->getInitiator(),
         ]);
@@ -35,11 +36,11 @@ class TemplateService extends BaseService
      *
      * @return array<string, mixed>
      */
-    public function getTemplateDownloadUrl(string $templateId, string $type = 'sign'): array
+    public function getDownloadUrl(string $templateId): array
     {
-        return $this->client->getTemplateDownloadUrl([
+        return $this->getTemplateDownloadUrl([
             'openCorpId' => $this->getInitiator()['openId'],
-            'type' => $type,
+            'type' => 'sign',
             'templateId' => $templateId,
         ]);
     }

@@ -48,6 +48,11 @@ return [
         'openId' => env('FADADA_INITIATOR_OPEN_ID', ''),
     ],
 
+    // 平台主体名称（Initiator 中的 openCorpId）
+    // 用于签署任务等场景中，指定签署任务的主体名称
+    'platform_actor_name' => env('FADADA_PLATFORM_ACTOR_NAME', ''),
+    'callback_url' => env('FADADA_CALLBACK_URL', ''),
+    
     /*
     |--------------------------------------------------------------------------
     | 调试模式

@@ -41,7 +41,7 @@ abstract class BaseService
      * 返回结构：
      *   [
      *     'idType' => 'corp' | 'person',
-     *     'openId' => '...', // 主体标识：idType=corp 时为 openCorpId，idType=person 时为 openUserId
+     *     'openId' => '...', 
      *   ]
      *
      * @return array{idType:string,openId:string}

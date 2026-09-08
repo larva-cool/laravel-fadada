@@ -85,7 +85,7 @@ abstract class BaseService
      * @return mixed
      * @throws InvalidArgumentException|\ReflectionException
      */
-    public function __call(string $method, $args)
+    public function __call(string $method, array $args)
     {
         if (!method_exists($this->client, $method)) {
             throw new \BadMethodCallException(sprintf(

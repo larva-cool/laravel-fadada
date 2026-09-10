@@ -21,6 +21,7 @@ class SignTaskService extends BaseService
     }
 
     /**
+     * 第一步：创建合同
      * 基于模板快速创建签署任务（默认自动提交、签完自动结束）。
      *
      * @param  string  $signTemplateId  签署模板 ID
@@ -45,16 +46,34 @@ class SignTaskService extends BaseService
     }
 
     /**
-     * 查询签署任务详情。
+     * 第二步：填写文档控件
+     * 发件人（发起方）批量填写文档控件（适用于模板中"发件人填写"的字段）。
      *
-     * @return array<string, mixed>
+     * 注意：必须在创建签署任务时设置 autoStart=false，填完后再调用 start() 启动。
+     *
+     * @param  array<int, array{docId: string, fieldId: string, fieldValue: string}>  $docFieldValues
      */
-    public function getSignTaskDetail(string $signTaskId): array
+    public function fillSenderFields(string $signTaskId, array $docFieldValues): array
     {
-        return $this->getDetail(['signTaskId' => $signTaskId]);
+        return $this->fillFieldsValue([
+            'signTaskId' => $signTaskId,
+            'docFieldValues' => $docFieldValues,
+        ]);
     }
 
     /**
+     * 第三步：启动签署任务
+     * 发件人（发起方）启动签署任务（必须在创建签署任务时设置 autoStart=false，填完后再调用 start() 启动）。
+     *
+     * 启动签署任务（fillSenderFields 之后调用）。
+     */
+    public function startSignTask(string $signTaskId): array
+    {
+        return $this->start(['signTaskId' => $signTaskId]);
+    }
+
+    /**
+     * 第四步：获取签署任务参与方专属链接
      * 获取签署参与方专属签署链接。
      *
      * @param  string  $signTaskId  签署任务 ID
@@ -73,6 +92,17 @@ class SignTaskService extends BaseService
         }
 
         return $this->actorGetUrl($payload);
+    }
+
+    /**
+     * 第五步：查询签署任务详情
+     * 查询签署任务详情。
+     *
+     * @return array<string, mixed>
+     */
+    public function getSignTaskDetail(string $signTaskId): array
+    {
+        return $this->getDetail(['signTaskId' => $signTaskId]);
     }
 
     /**
@@ -96,26 +126,5 @@ class SignTaskService extends BaseService
         return $this->getOwnerDownloadUrl(['signTaskId' => $signTaskId]);
     }
 
-    /**
-     * 发件人（发起方）批量填写文档控件（适用于模板中"发件人填写"的字段）。
-     *
-     * 注意：必须在创建签署任务时设置 autoStart=false，填完后再调用 start() 启动。
-     *
-     * @param  array<int, array{docId: string, fieldId: string, fieldValue: string}>  $docFieldValues
-     */
-    public function fillSenderFields(string $signTaskId, array $docFieldValues): array
-    {
-        return $this->fillFieldsValue([
-            'signTaskId' => $signTaskId,
-            'docFieldValues' => $docFieldValues,
-        ]);
-    }
-
-    /**
-     * 启动签署任务（fillSenderFields 之后调用）。
-     */
-    public function startSignTask(string $signTaskId): array
-    {
-        return $this->start(['signTaskId' => $signTaskId]);
-    }
+    
 }

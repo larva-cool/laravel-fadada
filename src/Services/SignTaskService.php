@@ -126,5 +126,23 @@ class SignTaskService extends BaseService
         return $this->getOwnerDownloadUrl(['signTaskId' => $signTaskId]);
     }
 
+    /**
+     * 获取签署任务参与方刷脸底图。
+     *
+     * 用于获取参与方在签署过程中刷脸比对的底图（base64 或 URL），
+     * 通常用于业务侧存档或人工审核。
+     *
+     * @param  string  $signTaskId  签署任务 ID
+     * @param  string  $actorId     参与方 ID（模板中的 actorId，如"甲方"/"乙方"）
+     * @return array<string, mixed>
+     */
+    public function getActorFacePicture(string $signTaskId, string $actorId): array
+    {
+        return $this->getFacePicture([
+            'signTaskId' => $signTaskId,
+            'actorId'    => $actorId,
+        ]);
+    }
+
     
 }

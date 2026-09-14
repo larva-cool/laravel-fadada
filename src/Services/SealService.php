@@ -30,7 +30,7 @@ class SealService extends BaseService
      * @param  string  $redirectUrl  授权完成后的跳转地址
      * @return array<string, mixed>
      */
-    public function getFreeSignToTemplateUrl(array $templateIds, array $sealIds = [], string $redirectUrl = ''): array
+    public function getFreeSignToTemplateAuthUrl(array $templateIds, array $sealIds = [], string $redirectUrl = ''): array
     {
         if ($sealIds === []) {
             $sealId = (string) $this->config('fadada.seal_id', '');
@@ -53,7 +53,7 @@ class SealService extends BaseService
     /**
      * 获取印章免验证签链接（按业务场景 business_id 授权）。
      *
-     * 与 getFreeSignToTemplateUrl（按 templateId 授权）互补，业务在创建
+     * 与 getFreeSignToTemplateAuthUrl（按 templateId 授权）互补，业务在创建
      * 签署任务前先引导管理员完成授权，授权后才能发起免验签的签署任务。
      *
      * @param  string  $businessId  免验签场景码（法大大业务方提供）

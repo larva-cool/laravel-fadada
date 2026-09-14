@@ -31,6 +31,41 @@ class TemplateService extends BaseService
     }
 
     /**
+     * 读取签署模板参数（控件/字段）列表。
+     *
+     * 从 getSignTemplateDetail 返回的 templateFields 中提取参数，
+     * 统一转为 ['fieldId' => ..., 'fieldName' => ..., 'fieldType' => ..., 'required' => ...] 结构，
+     * 方便业务方直接渲染表单或做填充映射。
+     *
+     * @param  string  $signTemplateId
+     * @return array<int, array<string, mixed>>
+     */
+    public function getSignTemplateParams(string $signTemplateId): array
+    {
+        $detail = $this->getDetail($signTemplateId);
+
+        $fields = $detail['templateFields'] ?? [];
+        if (! is_array($fields)) {
+            return [];
+        }
+
+        $params = [];
+        foreach ($fields as $field) {
+            if (! is_array($field)) {
+                continue;
+            }
+            $params[] = [
+                'fieldId'   => $field['fieldId'] ?? '',
+                'fieldName' => $field['fieldName'] ?? '',
+                'fieldType' => $field['fieldType'] ?? '',
+                'required'  => $field['required'] ?? false,
+            ];
+        }
+
+        return $params;
+    }
+
+    /**
      * 获取模板下载地址。
      *
      * @return array<string, mixed>

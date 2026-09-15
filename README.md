@@ -159,6 +159,85 @@ Fadada::user()->getUserAuthUrl($req);
 - 可通过 `Fadada::accessToken()->flush()` 主动清除缓存
 - 多 app 共用一套代码时，每个 `app_id` 会单独缓存 token
 
+## 回调通知
+
+法大大平台在签署任务状态变更时会向你的服务推送回调通知。本包已内置 `FddController` 处理回调验签和事件分发。
+
+### 配置回调地址
+
+在 `.env` 中配置回调地址：
+
+```env
+FADADA_CALLBACK_URL=https://your-app.com/fadada/callback
+```
+
+### 注册路由
+
+在你的路由文件（如 `routes/web.php` 或 `routes/api.php`）中注册回调路由：
+
+```php
+use Larva\Fadada\FddController;
+
+Route::post('/fadada/callback', [FddController::class, 'callback']);
+```
+
+> 如果使用 CSRF 中间件，需将该路由排除在 CSRF 验证之外。
+
+### 回调处理流程
+
+`FddController::callback()` 依次执行：
+
+1. **时间戳校验**（防重放，±5 分钟容差）
+2. **签名验证**（HMAC-SHA256，防篡改）
+3. **bizContent JSON 解码**
+4. **事件分发**（根据事件类型派发对应的 Laravel Event）
+5. **返回响应**（验签通过返回 `{"msg":"success"}`，失败返回 `{"msg":"fail"}`）
+
+### 事件列表
+
+回调处理后会根据事件类型自动派发以下事件，所有事件均继承 `FddEvent`，通过 `$event->data` 可获取业务数据：
+
+| 事件类 | 事件 ID | 说明 |
+| --- | --- | --- |
+| `SignTaskCreated` | `sign-task-created` | 签署任务创建 |
+| `SignTaskCanceled` | `sign-task-canceled` | 签署任务撤销 |
+| `SignTaskExtension` | `sign-task-extension` | 签署任务延期 |
+| `SignTaskFinished` | `sign-task-finished` | 签署任务完成 |
+| `SignTaskAbolish` | `sign-task-abolish` | 签署任务作废 |
+| `FddEvent` | 其他 | 未识别的事件类型（兜底） |
+
+### 监听事件
+
+在 `AppServiceProvider` 的 `boot()` 方法中注册监听器，或使用 Laravel 的 Event Discovery：
+
+```php
+use Illuminate\Support\Facades\Event;
+use Larva\Fadada\Events\SignTaskFinished;
+
+Event::listen(SignTaskFinished::class, function (SignTaskFinished $event) {
+    $data = $event->data;
+    // 处理签署完成逻辑，如更新合同状态、发送通知等
+});
+```
+
+或在 `app/Providers/EventServiceProvider.php` 中：
+
+```php
+protected $listen = [
+    \Larva\Fadada\Events\SignTaskFinished::class => [
+        \App\Listeners\HandleSignTaskFinished::class,
+    ],
+];
+```
+
+### 手动查询回调记录
+
+除了接收推送回调外，也可主动查询平台上的回调推送记录：
+
+```php
+$callbacks = Fadada::callback()->getCallbacks(pageNo: 1, pageSize: 20);
+```
+
 ## 协议
 
 MIT

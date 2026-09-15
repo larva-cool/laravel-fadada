@@ -199,7 +199,12 @@ class CallbackService extends BaseService
     {
         $normalized = [];
         foreach ($headers as $key => $value) {
-            $normalized[strtolower($key)] = $value;
+            // Symfony HeaderBag::all() 返回值为数组（如 ['application/json']），
+            // 此处统一取出第一个元素转为字符串。
+            if (is_array($value)) {
+                $value = $value[0] ?? '';
+            }
+            $normalized[strtolower($key)] = (string) $value;
         }
 
         return $normalized;

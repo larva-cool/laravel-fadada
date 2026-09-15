@@ -38,6 +38,8 @@ FADADA_APP_SECRET=你的app_secret
 FADADA_SERVICE_URL=https://api.fadada.com/api/v5/
 FADADA_TIMEOUT=60
 FADADA_DEBUG=false
+FADADA_SEAL_ID=                 # 默认印章 ID（可选，SealService 便捷方法使用）
+FADADA_CALLBACK_URL=https://your-app.com/fadada/callback
 
 # AccessToken 缓存相关（可选）
 FADADA_TOKEN_STORE=               # 留空使用默认 cache store

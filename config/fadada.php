@@ -51,6 +51,11 @@ return [
     // 平台主体名称（Initiator 中的 openCorpId）
     // 用于签署任务等场景中，指定签署任务的主体名称
     'platform_actor_name' => env('FADADA_PLATFORM_ACTOR_NAME', ''),
+
+    // 默认印章 ID
+    // SealService 的免验证签授权、用印员授权等便捷方法在未显式传入 sealId 时使用
+    'seal_id' => env('FADADA_SEAL_ID', ''),
+
     'callback_url' => env('FADADA_CALLBACK_URL', ''),
     
     /*

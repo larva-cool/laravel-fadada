@@ -23,6 +23,7 @@ use Larva\Fadada\FadadaManager;
  * @method static \Larva\Fadada\Services\CallbackService callback()
  * @method static \Larva\Fadada\Services\GetServiceService getService()
  * @method static \Larva\Fadada\AccessToken accessToken()
+ * @method static \Larva\Fadada\FadadaClient client()
  *
  * @see \Larva\Fadada\FadadaManager
  */

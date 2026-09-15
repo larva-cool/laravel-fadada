@@ -195,15 +195,111 @@ Route::post('/fadada/callback', [FddController::class, 'callback']);
 
 ### 事件列表
 
-回调处理后会根据事件类型自动派发以下事件，所有事件均继承 `FddEvent`，通过 `$event->data` 可获取业务数据：
+回调处理后会根据事件类型自动派发以下事件，所有事件均继承 `FddEvent`，通过 `$event->data` 可获取业务数据。`FddController` 内部通过 `$eventMap` 映射表将事件 ID 路由到对应的事件类，未在映射表中的事件将使用兜底的 `FddEvent` 类派发。
+
+#### 签署任务事件
 
 | 事件类 | 事件 ID | 说明 |
 | --- | --- | --- |
 | `SignTaskCreated` | `sign-task-created` | 签署任务创建 |
-| `SignTaskCanceled` | `sign-task-canceled` | 签署任务撤销 |
+| `SignTaskStart` | `sign-task-start` | 签署任务提交（启动） |
+| `SignTaskSigned` | `sign-task-signed` | 参与方签署成功 |
+| `SignTaskFilled` | `sign-task-filled` | 参与方填写完成 |
+| `SignTaskFillRejected` | `sign-task-fill-rejected` | 参与方拒填 |
+| `SignTaskFinalize` | `sign-task-finalize` | 签署任务定稿 |
+| `SignTaskRead` | `sign-task-read` | 参与方 / 抄送方阅读 |
+| `SignTaskJoined` | `sign-task-joined` | 参与方加入 |
+| `SignTaskJoinFailed` | `sign-task-join-failed` | 参与方加入失败 |
+| `SignTaskSignFailed` | `sign-task-sign-failed` | 签署失败（免验证签署） |
+| `SignTaskSignRejected` | `sign-task-sign-rejected` | 参与方拒签 |
+| `SignTaskIgnore` | `sign-task-ignore` | 驳回填写（需手动定稿时） |
+| `SignTaskPending` | `sign-task-pending` | 待处理（3.0 任务专属） |
+| `SignTaskDownload` | `sign-task-download` | 批量下载文档压缩包就绪 |
 | `SignTaskExtension` | `sign-task-extension` | 签署任务延期 |
 | `SignTaskFinished` | `sign-task-finished` | 签署任务完成 |
+| `SignTaskCanceled` | `sign-task-canceled` | 签署任务撤销 |
 | `SignTaskAbolish` | `sign-task-abolish` | 签署任务作废 |
+| `SignTaskExpire` | `sign-task-expire` | 签署任务过期 |
+
+#### 认证授权事件
+
+| 事件类 | 事件 ID | 说明 |
+| --- | --- | --- |
+| `UserAuthorize` | `user-authorize` | 个人用户授权 |
+| `CorpAuthorize` | `corp-authorize` | 企业用户授权 |
+| `UserCancelAuthorization` | `user-cancel-authorization` | 个人用户解除授权 |
+| `CorpCancelAuthorization` | `corp-cancel-authorization` | 企业用户解除授权 |
+| `UserThreeElementVerify` | `user-three-element-verify` | 个人三要素校验 |
+| `UserFourElementVerify` | `user-four-element-verify` | 个人四要素校验 |
+
+#### 印章管理事件
+
+| 事件类 | 事件 ID | 说明 |
+| --- | --- | --- |
+| `SealCreate` | `seal-create` | 印章创建 |
+| `SealDelete` | `seal-delete` | 印章删除 |
+| `SealEnable` | `seal-enable` | 印章启用 |
+| `SealDisable` | `seal-disable` | 印章停用 |
+| `SealModifyInfo` | `seal-modify-info` | 印章基本信息修改 |
+| `SealCancellation` | `seal-cancellation` | 印章注销 |
+| `SealAuthorizeMember` | `seal-authorize-member` | 印章授权成员 |
+| `SealAuthorizeMemberCancel` | `seal-authorize-member-cancel` | 印章取消授权成员 |
+| `SealAuthorizeFreeSign` | `seal-authorize-free-sign` | 印章授权免验证签 |
+| `SealAuthorizeFreeSignCancel` | `seal-authorize-free-sign-cancel` | 印章免验证签解除 |
+| `SealAuthorizeFreeSignDueCancel` | `seal-authorize-free-sign-due-cancel` | 印章免验证签即将到期 |
+| `SealVerifySuccessed` | `seal-verify-successed` | 印章审核通过 |
+| `SealVerifyFailed` | `seal-verify-failed` | 印章审核不通过 |
+| `SealVerifyCancel` | `seal-verify-cancel` | 印章审核撤销 |
+
+#### 个人签名事件
+
+| 事件类 | 事件 ID | 说明 |
+| --- | --- | --- |
+| `PersonalSealCreate` | `personal-seal-create` | 签名创建 |
+| `PersonalSealDelete` | `personal-seal-delete` | 签名删除 |
+| `PersonalSealAuthorizeFreeSign` | `personal-seal-authorize-free-sign` | 个人签名授权免验证签 |
+| `PersonalSealAuthorizeFreeSignCancel` | `personal-seal-authorize-free-sign-cancel` | 个人签名免验证签解除 |
+| `PersonalSealAuthorizeFreeSignDueCancel` | `personal-seal-authorize-free-sign-due-cancel` | 签名免验证签即将到期 |
+
+#### 组织管理事件
+
+| 事件类 | 事件 ID | 说明 |
+| --- | --- | --- |
+| `OrganizationDeptCreate` | `organization-dept-create` | 部门创建 |
+| `OrganizationDeptDelete` | `organization-dept-delete` | 部门删除 |
+| `OrganizationDeptModify` | `organization-dept-modify` | 部门信息修改 |
+| `OrgMemberCreate` | `organization-member-create` | 成员创建 |
+| `OrgMemberDelete` | `organization-member-delete` | 成员删除 |
+| `OrgMemberActive` | `organization-member-active` | 成员激活 |
+| `OrgMemberDisable` | `organization-member-disable` | 成员禁用 |
+| `OrgMemberEnable` | `organization-member-enable` | 成员启用 |
+| `OrgMemberModifyDept` | `organization-member-modify-dept` | 成员所属部门修改 |
+| `OrgMemberModifyInfo` | `organization-member-modify-info` | 成员基本信息修改 |
+| `EntityManage` | `entity-manage` | 成员企业管理 |
+
+#### 模板事件
+
+| 事件类 | 事件 ID | 说明 |
+| --- | --- | --- |
+| `TemplateCreate` | `template-create` | 模板创建 |
+| `TemplateDelete` | `template-delete` | 模板删除 |
+| `TemplateEnable` | `template-enable` | 模板启用 |
+| `TemplateDisable` | `template-disable` | 模板停用 |
+
+#### 审批事件
+
+| 事件类 | 事件 ID | 说明 |
+| --- | --- | --- |
+| `ApprovalCreate` | `approval-create` | 审批发起 |
+| `ApprovalChange` | `approval-change` | 审批变更 |
+
+#### 其他事件
+
+| 事件类 | 事件 ID | 说明 |
+| --- | --- | --- |
+| `BillPaid` | `billing-order-payed` | 订单支付完成 |
+| `PerformanceRemind` | `performance-remind` | 履约提醒 |
+| `FaceRecognition` | `face-recognition` | 人脸核身完成 |
 | `FddEvent` | 其他 | 未识别的事件类型（兜底） |
 
 ### 监听事件

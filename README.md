@@ -238,6 +238,150 @@ protected $listen = [
 $callbacks = Fadada::callback()->getCallbacks(pageNo: 1, pageSize: 20);
 ```
 
+## 可选合同模型（FddContract）
+
+本包提供一个**可选的** Eloquent 模型设计方案，用于在宿主应用本地持久化法大大签署任务的状态和事件轨迹。模型为可选组件——不使用它，SDK 的 Service / Event / Callback 机制照常工作；使用它，则获得本地状态追踪能力。
+
+### 数据表设计：`fdd_contracts`
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `id` | bigint (PK) | 本地主键 |
+| `initiator_type` | string | 多态发起方类型（如 `App\Models\User`、`App\Models\Corp`） |
+| `initiator_id` | bigint | 多态发起方 ID |
+| `sign_task_id` | string (nullable) | 法大大签署任务 ID（创建后回填） |
+| `sign_template_id` | string (nullable) | 签署模板 ID |
+| `subject` | string | 签署任务主题 / 合同名称 |
+| `status` | string | 签署状态枚举（见下文） |
+| `actors` | json (nullable) | 参与方列表快照 |
+| `options` | json (nullable) | 创建时的扩展参数快照 |
+| `last_event` | string (nullable) | 最后一次回调事件名（如 `sign-task-finished`） |
+| `last_event_at` | timestamp (nullable) | 最后一次回调时间 |
+| `last_event_data` | json (nullable) | 最后一次回调原始 bizContent |
+| `finished_at` | timestamp (nullable) | 完成时间 |
+| `canceled_at` | timestamp (nullable) | 撤销时间 |
+| `abolished_at` | timestamp (nullable) | 作废时间 |
+| `expired_at` | timestamp (nullable) | 过期 / 延期时间 |
+| `created_at` | timestamp | |
+| `updated_at` | timestamp | |
+
+### 状态枚举
+
+| 常量 | 值 | 说明 |
+| --- | --- | --- |
+| `STATUS_DRAFT` | `draft` | 草稿（本地创建，尚未提交法大大） |
+| `STATUS_PENDING` | `pending` | 待签署（sign-task-created 回调后） |
+| `STATUS_SIGNING` | `signing` | 签署中（查询详情发现有人已签署但未全部完成） |
+| `STATUS_COMPLETED` | `completed` | 已完成（sign-task-finished） |
+| `STATUS_CANCELED` | `canceled` | 已撤销（sign-task-canceled） |
+| `STATUS_ABOLISHED` | `abolished` | 已作废（sign-task-abolish） |
+| `STATUS_EXPIRED` | `expired` | 已过期（sign-task-extension 触发，或签署截止日已过） |
+
+状态流转：
+
+```
+draft → pending → signing → completed
+                  ↓
+               canceled / abolished / expired
+```
+
+### 多态发起方
+
+利用 Laravel 多态关联 `morphTo`，宿主应用中任意模型均可作为发起方：
+
+```php
+// FddContract 模型
+public function initiator(): MorphTo
+{
+    return $this->morphTo();
+}
+
+// 使用示例
+$contract = FddContract::create([
+    'initiator_type' => User::class,
+    'initiator_id'   => $user->id,
+    'subject'        => '采购合同',
+    'status'         => 'draft',
+]);
+
+$contract->initiator; // → App\Models\User 实例
+```
+
+### 事件联动
+
+现有 5 个事件各自携带 `data` 数组，其中包含 `signTaskId`。事件与状态映射关系：
+
+| 事件 | 目标状态 | 时间字段 |
+| --- | --- | --- |
+| `SignTaskCreated` | `pending` | — |
+| `SignTaskExtension` | `expired`（或保持原状态仅记录延期） | `expired_at` |
+| `SignTaskFinished` | `completed` | `finished_at` |
+| `SignTaskCanceled` | `canceled` | `canceled_at` |
+| `SignTaskAbolish` | `abolished` | `abolished_at` |
+
+在宿主应用的 Event Listener 中监听事件并更新合同状态：
+
+```php
+use Illuminate\Support\Facades\Event;
+use Larva\Fadada\Events\SignTaskFinished;
+
+Event::listen(SignTaskFinished::class, function (SignTaskFinished $event) {
+    FddContract::where('sign_task_id', $event->data['signTaskId'])
+        ->update([
+            'status'          => FddContract::STATUS_COMPLETED,
+            'last_event'      => 'sign-task-finished',
+            'last_event_at'   => now(),
+            'last_event_data' => $event->data,
+            'finished_at'     => now(),
+        ]);
+});
+```
+
+### 模型关键方法
+
+```php
+class FddContract extends Model
+{
+    // 事件 → 状态映射
+    const EVENT_STATUS_MAP = [
+        'sign-task-created'   => self::STATUS_PENDING,
+        'sign-task-finished'  => self::STATUS_COMPLETED,
+        'sign-task-canceled'  => self::STATUS_CANCELED,
+        'sign-task-abolish'   => self::STATUS_ABOLISHED,
+        'sign-task-extension' => self::STATUS_EXPIRED,
+    ];
+
+    // 多态关联
+    public function initiator(): MorphTo;
+
+    // 状态查询作用域
+    public function scopePending(Builder $q): Builder;
+    public function scopeCompleted(Builder $q): Builder;
+    public function scopeActive(Builder $q): Builder; // 未完成且未终止
+
+    // 从回调事件更新状态
+    public static function updateFromEvent(string $event, array $data): ?static;
+}
+```
+
+### 文件结构
+
+```
+src/
+├── Models/
+│   └── FddContract.php          # 合同模型（含多态关联、状态作用域、事件映射常量）
+├── Database/
+│   └── Migrations/
+│       └── create_fdd_contracts_table.php  # 迁移文件
+```
+
+### 可选性保障
+
+- 模型不依赖任何 Service，Service 也不依赖模型
+- 迁移文件通过 `publishes` 发布，宿主应用自行决定是否运行
+- 不修改现有 `FadadaServiceProvider` 的注册逻辑
+- 在 `FadadaServiceProvider::boot()` 中增加可选的迁移发布标签 `fadada-migrations`
+
 ## 协议
 
 MIT

@@ -32,6 +32,10 @@ class SignTaskService extends BaseService
      */
     public function createSignWithTemplate(string $signTemplateId, string $subject, array $actors, array $options = []): array
     {
+        if ($options['callbackUrl'] === '') {
+            $options['callbackUrl'] = (string) config('fadada.callback_url', '');
+        }
+
         $payload = array_merge([
             'initiator' => $this->getInitiator(),
             'signTemplateId' => $signTemplateId,

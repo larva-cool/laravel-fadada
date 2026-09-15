@@ -24,8 +24,7 @@
     "ext-iconv": "*",
     "ext-json": "*",
     "fadada/fasc-openapi-php-sdk": "^5.8",
-    "illuminate/support": "^12.0|^13.0",
-    "illuminate/contracts": "^12.0|^13.0"
+    "laravel/framework": "^12.0|^13.0"
   },
   "autoload": {
     "psr-4": {
